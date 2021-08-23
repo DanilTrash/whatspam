@@ -8,10 +8,10 @@ from logger import logger
 LOGGER = logger('MAIN')
 
 
-def main(index, admin, timeout):
+def main(index, admin):
     while True:
         try:
-            whats = WhatsApp(index, admin, timeout)
+            whats = WhatsApp(index, admin)
             if whats.resp['status'] != 'OK':
                 LOGGER.warning(f"{admin} {whats.resp['status']}")
                 continue
@@ -30,13 +30,13 @@ def main(index, admin, timeout):
             sleep(timeout * 60)
 
 
+timeout = 120
 if __name__ == '__main__':
     LOGGER.info(__name__)
     admins = Database().admins
-    timeout = 120
     procs = []
     for index, admin in enumerate(admins):
-        proc = Process(target=main, args=(index, admin, timeout), daemon=True)
+        proc = Process(target=main, args=(index, admin), daemon=True)
         procs.append(proc)
         proc.start()
         sleep(10 * 60)

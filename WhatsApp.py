@@ -5,25 +5,21 @@ from selenium import webdriver
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
-
-from logger import alert, logger
 from Database import Database
+from logger import alert, logger
 
 LOGGER = logger('WhatsApp')
 WEB_WHATSAPP_URL = "https://web.whatsapp.com/"
 
 
 class WhatsApp:
-    def __init__(self, index=None, admin=None, timeout=120, profile_id=None):
+    def __init__(self, index=None, admin=None, profile_id=None):
         self.admin = admin
-        self.timeout = timeout
         self.profile_id = profile_id or Database().profile_ids[index]
         self.index = index
-        self.targets = Database().targets[index].split('\n')
-        LOGGER.info(f'{self.admin} instanced')
+        LOGGER.info(f'{self.admin}:{self.profile_id}')
         mla_url = 'http://127.0.0.1:35000/api/v1/profile/start?automation=true&profileId=' + self.profile_id
         self.resp = requests.get(mla_url).json()
         if self.resp['status'] == 'OK':
@@ -42,28 +38,24 @@ class WhatsApp:
             return False
 
     def spam(self):
+        targets = Database().targets[self.index].split('\n')
         message = Database().messages[self.index]
         if type(message) is float:
             return False
         LOGGER.info(f'{self.admin} спам запущен')
         alert(f'{self.admin} спам запущен')
-        for target in self.targets:
+        for target in targets:
             try:
-                # typing in group search field
                 search_bar = '//*[@id="side"]/div[1]/div/label/div/div[2]'
                 search_bar_element = WebDriverWait(self.driver, 7).until(
                     lambda d: self.driver.find_element(By.XPATH, search_bar))
                 search_bar_element.clear()
                 print(self.admin, target)
                 search_bar_element.send_keys(target)
-
-                # searching for group in list
                 group_xpath = f'//span[@title="{target}"]'
                 WebDriverWait(self.driver, 7).until(
                     lambda d: self.driver.find_element(By.XPATH, group_xpath))
                 self.driver.find_element(By.XPATH, group_xpath).click()
-
-                # searching for message field
                 text_area = '//*[@id="main"]/footer/div[1]/div[2]/div/div[1]/div/div[2]'
                 text_area_element = WebDriverWait(self.driver, 7).until(
                     lambda d: self.driver.find_element(By.XPATH, text_area))
@@ -81,11 +73,12 @@ class WhatsApp:
             except Exception as error:
                 LOGGER.error(error, exc_info=True)
                 continue
-        time = datetime.datetime.now() + datetime.timedelta(minutes=self.timeout)
+        time = datetime.datetime.now() + datetime.timedelta(minutes=timeout)
         LOGGER.info(f'Для {self.admin} спам запустится в {time.strftime("%H:%M")}')
         alert(f'Для {self.admin} спам запустится в {time.strftime("%H:%M")}')
 
 
 if __name__ == '__main__':
-    whats = WhatsApp(profile_id='a645a079-05d4-47ae-8be3-4f70415a58e8')
+    timeout = 120
+    whats = WhatsApp(profile_id="3b810f14-7330-4f73-8b13-92246b75435f")
     whats.authorisation()
