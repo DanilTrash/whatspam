@@ -13,7 +13,7 @@ def main(index, admin):
         try:
             whats = WhatsApp(index, admin)
             if whats.resp['status'] != 'OK':
-                LOGGER.warning(f"{admin} {whats.resp['status']}")
+                LOGGER.warning(f"{admin} multilogin {whats.resp['status']}")
                 continue
             authorisation = whats.authorisation()
             if authorisation:
@@ -36,6 +36,7 @@ if __name__ == '__main__':
     admins = Database().admins
     procs = []
     for index, admin in enumerate(admins):
+        # main(index, admin)
         proc = Process(target=main, args=(index, admin), daemon=True)
         procs.append(proc)
         proc.start()

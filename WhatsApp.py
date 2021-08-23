@@ -31,7 +31,7 @@ class WhatsApp:
         LOGGER.info(f'{self.admin} Whatsapp загружается')
         try:
             WebDriverWait(self.driver, 60).until(
-                lambda d: 'WhatsApp доступен для Windows.' in self.driver.page_source)
+                lambda d: 'WhatsApp доступен для Windows.' in self.driver.page_source)  # fixme
             return True
         except TimeoutException:
             LOGGER.warning(f'{self.admin} Убедитесь, что ваш телефон подключен к Интернету.')
