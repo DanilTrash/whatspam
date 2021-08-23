@@ -19,22 +19,25 @@ class WhatsApp:
         self.admin = admin
         self.profile_id = profile_id or Database().profile_ids[index]
         self.index = index
-        LOGGER.info(f'{self.admin}:{self.profile_id}')
+        LOGGER.info(f'{self.admin} instanced')
         mla_url = 'http://127.0.0.1:35000/api/v1/profile/start?automation=true&profileId=' + self.profile_id
         self.resp = requests.get(mla_url).json()
         if self.resp['status'] == 'OK':
             value = self.resp['value']
             self.driver = webdriver.Remote(command_executor=value, desired_capabilities={'acceptSslCerts': True})
 
-    def authorisation(self):  # todo more features
+    def authorisation(self):  # todo: more features
         self.driver.get(WEB_WHATSAPP_URL)
         LOGGER.info(f'{self.admin} Whatsapp загружается')
         try:
+            WebDriverWait(self.driver, 10).until(
+                lambda d: self.driver.execute_script('return document.readyState;') == 'complete')
             WebDriverWait(self.driver, 60).until(
-                lambda d: 'WhatsApp доступен для Windows.' in self.driver.page_source)  # fixme
+                lambda d: 'Не отключайте свой телефон' in self.driver.page_source)
             return True
         except TimeoutException:
             LOGGER.warning(f'{self.admin} Убедитесь, что ваш телефон подключен к Интернету.')
+            alert(f'{self.admin} Убедитесь, что ваш телефон подключен к Интернету.')
             return False
 
     def spam(self):
@@ -65,7 +68,6 @@ class WhatsApp:
                         text_area_element.send_keys(line)
                     text_area_element.send_keys(Keys.ALT + Keys.ENTER)
                 text_area_element.send_keys(Keys.ENTER)
-
                 print(f'{self.admin} сообщение отправлено')
             except TimeoutException as error:
                 LOGGER.error(error)
@@ -73,12 +75,7 @@ class WhatsApp:
             except Exception as error:
                 LOGGER.error(error, exc_info=True)
                 continue
+        timeout = 120
         time = datetime.datetime.now() + datetime.timedelta(minutes=timeout)
         LOGGER.info(f'Для {self.admin} спам запустится в {time.strftime("%H:%M")}')
         alert(f'Для {self.admin} спам запустится в {time.strftime("%H:%M")}')
-
-
-if __name__ == '__main__':
-    timeout = 120
-    whats = WhatsApp(profile_id="3b810f14-7330-4f73-8b13-92246b75435f")
-    whats.authorisation()

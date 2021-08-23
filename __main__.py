@@ -19,7 +19,7 @@ def main(index, admin):
             if authorisation:
                 whats.spam()
                 whats.driver.close()
-                sleep(timeout * 60)
+                sleep(TIMEOUT * 60)
                 continue
             else:
                 whats.driver.close()
@@ -27,10 +27,10 @@ def main(index, admin):
                 continue
         except Exception as error:
             LOGGER.error(f'{admin} {error}', exc_info=True)
-            sleep(timeout * 60)
+            sleep(TIMEOUT * 60)
 
 
-timeout = 120
+TIMEOUT = 120
 if __name__ == '__main__':
     LOGGER.info(__name__)
     admins = Database().admins
