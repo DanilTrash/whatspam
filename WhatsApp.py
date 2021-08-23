@@ -70,12 +70,12 @@ class WhatsApp:
                 text_area_element.send_keys(Keys.ENTER)
                 print(f'{self.admin} сообщение отправлено')
             except TimeoutException as error:
-                LOGGER.error(error)
+                print('TimeoutException')
                 continue
             except Exception as error:
                 LOGGER.error(error, exc_info=True)
                 continue
         timeout = 120
-        time = datetime.datetime.now() + datetime.timedelta(minutes=timeout)
+        time = datetime.datetime.now() + datetime.timedelta(minutes=timeout)  # todo: запись и сбор этих данных в базу
         LOGGER.info(f'Для {self.admin} спам запустится в {time.strftime("%H:%M")}')
         alert(f'Для {self.admin} спам запустится в {time.strftime("%H:%M")}')

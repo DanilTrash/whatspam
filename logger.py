@@ -2,7 +2,7 @@ import logging
 from telethon import TelegramClient, sync
 
 
-def logger(name, mode='a'):
+def logger(name, mode='w'):
     logger = logging.getLogger(name)
     logger.setLevel(logging.INFO)
     console_handler = logging.StreamHandler()
@@ -19,6 +19,5 @@ def logger(name, mode='a'):
 def alert(message):
     api_id = 4345538
     api_hash = '49313b839c59755f6d4ed52c002576f9'
-    client = TelegramClient(f'+79687580328', api_id, api_hash).start()
-    client.send_message(entity=585403132, message=message)
-    client.disconnect()
+    with TelegramClient(f'+79687580328', api_id, api_hash) as client:
+        client.send_message(entity=585403132, message=message)

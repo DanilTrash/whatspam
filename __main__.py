@@ -40,6 +40,6 @@ if __name__ == '__main__':
         proc = Process(target=main, args=(index, admin), daemon=True)
         procs.append(proc)
         proc.start()
-        sleep(10 * 60)
+        sleep(5 * 60)
     for proc in procs:
         proc.join()
