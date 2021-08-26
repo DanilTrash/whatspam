@@ -1,4 +1,6 @@
 import datetime
+from io import BytesIO
+from time import sleep
 
 import requests
 from selenium import webdriver
@@ -6,6 +8,7 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
+from PIL import Image
 
 from Database import Database
 from logger import alert, logger
@@ -18,6 +21,7 @@ class WhatsApp:
     def __init__(self, index=None, admin=None, profile_id=None):
         self.admin = admin
         self.profile_id = profile_id or Database().profile_ids[index]
+        self.telegram = Database().telegrams[index]
         self.index = index
         LOGGER.info(f'{self.admin} instanced')
         mla_url = 'http://127.0.0.1:35000/api/v1/profile/start?automation=true&profileId=' + self.profile_id
@@ -26,19 +30,37 @@ class WhatsApp:
             value = self.resp['value']
             self.driver = webdriver.Remote(command_executor=value, desired_capabilities={'acceptSslCerts': True})
 
-    def authorisation(self):  # todo: more features
+    def get_qrcode(self):
+        qr_code_xpath = '//canvas'
+        captcha_element = self.driver.find_element(By.XPATH, qr_code_xpath)
+        location = captcha_element.location_once_scrolled_into_view
+        size = captcha_element.size
+        png = self.driver.get_screenshot_as_png()
+        im = Image.open(BytesIO(png))
+        left = location['x'] - 20
+        top = location['y'] - 20
+        right = location['x'] + size['width'] + 20
+        bottom = location['y'] + size['height'] + 20
+        im = im.crop((left, top, right, bottom))
+        im.save(f'{self.admin}_captcha.png')
+        alert(self.admin + ' авторизируйтесь', self.telegram, f'{self.admin}_captcha.png')
+        sleep(20)
+
+    def authorisation(self):
         self.driver.get(WEB_WHATSAPP_URL)
         LOGGER.info(f'{self.admin} Whatsapp загружается')
         try:
-            WebDriverWait(self.driver, 10).until(
-                lambda d: self.driver.execute_script('return document.readyState;') == 'complete')
-            WebDriverWait(self.driver, 60).until(
-                lambda d: 'Не отключайте свой телефон' in self.driver.page_source)
-            return True
-        except TimeoutException:
-            LOGGER.warning(f'{self.admin} Убедитесь, что ваш телефон подключен к Интернету.')
-            alert(f'{self.admin} Убедитесь, что ваш телефон подключен к Интернету.')
+            qr_code_xpath = '//canvas'
+            WebDriverWait(self.driver, 30).until(lambda d: self.driver.find_element(By.XPATH, qr_code_xpath))
+            LOGGER.error(f'{self.admin} не авторизирован')
             return False
+        except TimeoutException:
+            try:
+                WebDriverWait(self.driver, 20).until(
+                    lambda d: 'Не отключайте свой телефон' in self.driver.page_source)
+                return True
+            except TimeoutException:
+                return False
 
     def spam(self):
         targets = Database().targets[self.index].split('\n')
@@ -63,7 +85,7 @@ class WhatsApp:
                 text_area_element = WebDriverWait(self.driver, 7).until(
                     lambda d: self.driver.find_element(By.XPATH, text_area))
                 text_area_element.clear()
-                for line in (message).splitlines():
+                for line in message.splitlines():
                     if str.encode(line[:-1]) != b'\n':
                         text_area_element.send_keys(line)
                     text_area_element.send_keys(Keys.ALT + Keys.ENTER)

@@ -10,3 +10,4 @@ class Database:
         self.profile_ids = pd.read_csv(Database.url)['profile_id'].dropna().tolist()
         self.messages = pd.read_csv(Database.url)['message'].tolist()
         self.targets = pd.read_csv(Database.url)['targets'].dropna().tolist()
+        self.telegrams = pd.read_csv(Database.url)['telegram'].dropna().tolist()

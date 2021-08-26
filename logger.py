@@ -16,8 +16,10 @@ def logger(name, mode='w'):
     return logger
 
 
-def alert(message):
-    api_id = 4345538
-    api_hash = '49313b839c59755f6d4ed52c002576f9'
+api_id = 4345538
+api_hash = '49313b839c59755f6d4ed52c002576f9'
+
+
+def alert(message, entity=585403132, file=None):
     with TelegramClient(f'+79687580328', api_id, api_hash) as client:
-        client.send_message(entity=585403132, message=message)
+        client.send_message(entity, message, file=file)

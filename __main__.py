@@ -10,21 +10,21 @@ LOGGER = logger('MAIN')
 
 def main(index, admin):
     while True:
+        whats = WhatsApp(index, admin)
+        if whats.resp['status'] != 'OK':
+            LOGGER.warning(f"{admin} multilogin {whats.resp['status']}")
+            continue
         try:
-            whats = WhatsApp(index, admin)
-            if whats.resp['status'] != 'OK':
-                LOGGER.warning(f"{admin} multilogin {whats.resp['status']}")
-                continue
-            authorisation = whats.authorisation()
-            if authorisation:
-                whats.spam()
-                whats.driver.close()
-                sleep(TIMEOUT * 60)
-                continue
-            else:
-                whats.driver.close()
-                LOGGER.error(f'{admin} не авторизирован')
-                continue
+            while True:
+                authorisation = whats.authorisation()
+                if authorisation:
+                    whats.spam()
+                    whats.driver.close()
+                    sleep(TIMEOUT * 60)
+                    break
+                else:
+                    whats.get_qrcode()
+                    continue
         except Exception as error:
             LOGGER.error(f'{admin} {error}', exc_info=True)
             sleep(TIMEOUT * 60)
@@ -34,9 +34,9 @@ TIMEOUT = 120
 if __name__ == '__main__':
     LOGGER.info(__name__)
     admins = Database().admins
+    # main(9, 'Майя')
     procs = []
     for index, admin in enumerate(admins):
-        # main(index, admin)
         proc = Process(target=main, args=(index, admin), daemon=True)
         procs.append(proc)
         proc.start()
