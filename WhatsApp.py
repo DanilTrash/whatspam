@@ -3,28 +3,31 @@ from io import BytesIO
 from time import sleep
 
 import requests
+from PIL import Image
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
-from PIL import Image
 
 from Database import Database
 from logger import alert, logger
 
-LOGGER = logger(__name__)
 WEB_WHATSAPP_URL = "https://web.whatsapp.com/"
 TIMEOUT = 120
+LOGGER = logger(__file__)
 
 
 class WhatsApp:
-    def __init__(self, index=None, admin=None, profile_id=None):
+    def __init__(self, index=None, admin=None):
         self.admin = admin
-        self.profile_id = profile_id or Database().profile_ids[index]
-        self.telegram = Database().telegrams[index]
-        self.index = index
         LOGGER.info(f'{self.admin} instanced')
+        self.profile_id = '58ca6aa7-46f8-4b01-8f05-a98a05f648c2'
+        self.telegram = 'me'
+        if index is not None:
+            self.index = index
+            self.profile_id = Database().profile_ids[self.index]
+            self.telegram = Database().telegrams[self.index]
         mla_url = 'http://127.0.0.1:35000/api/v1/profile/start?automation=true&profileId=' + self.profile_id
         self.resp = requests.get(mla_url).json()
         if self.resp['status'] == 'OK':
@@ -91,11 +94,8 @@ class WhatsApp:
                     text_area_element.send_keys(Keys.ALT + Keys.ENTER)
                 text_area_element.send_keys(Keys.ENTER)
                 print(f'{self.admin} сообщение отправлено')
-            except TimeoutException as error:
-                print('TimeoutException')
-                continue
             except Exception as error:
-                LOGGER.error(error, exc_info=True)
+                LOGGER.error(f'{self.admin} {error}')
                 continue
         time = datetime.datetime.now() + datetime.timedelta(minutes=TIMEOUT)  # todo: запись и сбор этих данных в базу
         LOGGER.info(f'Для {self.admin} спам запустится в {time.strftime("%H:%M")}')
@@ -120,5 +120,4 @@ def main(index, admin):
             else:
                 whats.driver.close()
         except Exception as error:
-            whats.driver.close()
             LOGGER.error(f'{admin} {error}', exc_info=True)
