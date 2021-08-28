@@ -4,7 +4,7 @@ from time import sleep
 
 import requests
 from selenium import webdriver
-from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
@@ -13,8 +13,9 @@ from PIL import Image
 from Database import Database
 from logger import alert, logger
 
-LOGGER = logger('WhatsApp')
+LOGGER = logger(__name__)
 WEB_WHATSAPP_URL = "https://web.whatsapp.com/"
+TIMEOUT = 120
 
 
 class WhatsApp:
@@ -50,17 +51,16 @@ class WhatsApp:
         self.driver.get(WEB_WHATSAPP_URL)
         LOGGER.info(f'{self.admin} Whatsapp загружается')
         try:
-            qr_code_xpath = '//canvas'
-            WebDriverWait(self.driver, 30).until(lambda d: self.driver.find_element(By.XPATH, qr_code_xpath))
-            LOGGER.error(f'{self.admin} не авторизирован')
-            return False
+            WebDriverWait(self.driver, 20).until(lambda d: 'Не отключайте свой телефон' in self.driver.page_source)
+            return 'Success'
         except TimeoutException:
-            try:
-                WebDriverWait(self.driver, 20).until(
-                    lambda d: 'Не отключайте свой телефон' in self.driver.page_source)
-                return True
-            except TimeoutException:
-                return False
+            LOGGER.error(f'{self.admin} не авторизирован')
+        try:
+            qr_code_xpath = '//canvas'
+            self.driver.find_element(By.XPATH, qr_code_xpath)
+            return 'Captcha'
+        except NoSuchElementException:
+            return False
 
     def spam(self):
         targets = Database().targets[self.index].split('\n')
@@ -97,7 +97,28 @@ class WhatsApp:
             except Exception as error:
                 LOGGER.error(error, exc_info=True)
                 continue
-        timeout = 120
-        time = datetime.datetime.now() + datetime.timedelta(minutes=timeout)  # todo: запись и сбор этих данных в базу
+        time = datetime.datetime.now() + datetime.timedelta(minutes=TIMEOUT)  # todo: запись и сбор этих данных в базу
         LOGGER.info(f'Для {self.admin} спам запустится в {time.strftime("%H:%M")}')
         alert(f'Для {self.admin} спам запустится в {time.strftime("%H:%M")}')
+
+
+def main(index, admin):
+    while True:
+        whats = WhatsApp(index, admin)
+        if whats.resp['status'] != 'OK':
+            LOGGER.warning(f"{admin} multilogin {whats.resp['status']}")
+            continue
+        try:
+            authorisation = whats.authorisation()
+            if authorisation == 'Success':
+                whats.spam()
+                whats.driver.close()
+                sleep(TIMEOUT * 60)
+            if authorisation == 'Captcha':
+                whats.get_qrcode()
+                whats.driver.close()
+            else:
+                whats.driver.close()
+        except Exception as error:
+            whats.driver.close()
+            LOGGER.error(f'{admin} {error}', exc_info=True)
