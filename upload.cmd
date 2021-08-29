@@ -1,0 +1,1 @@
+scp *.py *.session danil@192.168.88.38:/home/danil/whatscript

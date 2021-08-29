@@ -19,20 +19,17 @@ LOGGER = logger(__file__)
 
 
 class WhatsApp:
-    def __init__(self, index=None, admin=None):
+    def __init__(self, index, admin=None):
         self.admin = admin
-        LOGGER.info(f'{self.admin} instanced')
-        self.profile_id = '58ca6aa7-46f8-4b01-8f05-a98a05f648c2'
-        self.telegram = 'me'
-        if index is not None:
-            self.index = index
-            self.profile_id = Database().profile_ids[self.index]
-            self.telegram = Database().telegrams[self.index]
+        self.index = index
+        self.profile_id = Database().profile_ids[self.index]
+        self.telegram = Database().telegrams[self.index]
         mla_url = 'http://127.0.0.1:35000/api/v1/profile/start?automation=true&profileId=' + self.profile_id
         self.resp = requests.get(mla_url).json()
         if self.resp['status'] == 'OK':
             value = self.resp['value']
             self.driver = webdriver.Remote(command_executor=value, desired_capabilities={'acceptSslCerts': True})
+        LOGGER.info(f'{self.admin} instanced')
 
     def get_qrcode(self):
         qr_code_xpath = '//canvas'
