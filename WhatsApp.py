@@ -1,6 +1,8 @@
+import argparse
 import datetime
 from io import BytesIO
 from time import sleep
+from multiprocessing import Process
 
 import requests
 from PIL import Image
@@ -19,11 +21,11 @@ LOGGER = logger(__file__)
 
 
 class WhatsApp:
-    def __init__(self, index, admin=None):
-        self.admin = admin
+    def __init__(self, index):
         self.index = index
-        self.profile_id = Database().profile_ids[self.index]
-        self.telegram = Database().telegrams[self.index]
+        self.admin = Database().admins[index]
+        self.profile_id = Database().profile_ids[index]
+        self.telegram = Database().telegrams[index]
         mla_url = 'http://127.0.0.1:35000/api/v1/profile/start?automation=true&profileId=' + self.profile_id
         self.resp = requests.get(mla_url).json()
         if self.resp['status'] == 'OK':
@@ -99,11 +101,11 @@ class WhatsApp:
         alert(f'Для {self.admin} спам запустится в {time.strftime("%H:%M")}')
 
 
-def main(index, admin):
+def main(index):
     while True:
-        whats = WhatsApp(index, admin)
+        whats = WhatsApp(index)
         if whats.resp['status'] != 'OK':
-            LOGGER.warning(f"{admin} multilogin {whats.resp['status']}")
+            LOGGER.warning(f"{whats.admin} multilogin {whats.resp['status']}")
             continue
         try:
             authorisation = whats.authorisation()
@@ -117,4 +119,14 @@ def main(index, admin):
             else:
                 whats.driver.close()
         except Exception as error:
-            LOGGER.error(f'{admin} {error}', exc_info=True)
+            LOGGER.error(f'{whats.admin} {error}', exc_info=True)
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--index', '-i', required=True, type=int)
+    args = parser.parse_args()
+    index = args.index
+    proc = Process(target=main, args=(args.index,), daemon=True)
+    proc.start()
+    proc.join()

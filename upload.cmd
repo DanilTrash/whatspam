@@ -1,1 +1,1 @@
-scp *.py *.session danil@192.168.88.38:/home/danil/whatscript
+scp *.py *.session server:/home/danil/whatscript

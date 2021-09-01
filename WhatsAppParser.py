@@ -9,8 +9,8 @@ LOGGER = logger('WhatsAppParser')
 
 
 class WhatsAppParser(WhatsApp):
-    def __init__(self, profile_id):
-        super().__init__(profile_id=profile_id)  # fix
+    def __init__(self, index):
+        super().__init__(index)  # fix
 
     def parse(self):
         groups = []
@@ -35,8 +35,13 @@ class WhatsAppParser(WhatsApp):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--profile", '-p', dest="profile", default=None, type=str)
+    parser.add_argument('--index', '-i', required=True, type=int)
     args = parser.parse_args()
-    whats_parser = WhatsAppParser(args.profile)
-    whats_parser.authorisation()
-    whats_parser.parse()
+    index = args.index
+    whats_parser = WhatsAppParser(args.index)
+    authorisation = whats_parser.authorisation()
+    if authorisation == 'Success':
+        whats_parser.parse()
+    if authorisation == 'Captcha':
+        whats_parser.get_qrcode()
+        whats_parser.driver.close()
