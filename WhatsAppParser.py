@@ -33,15 +33,20 @@ class WhatsAppParser(WhatsApp):
                 f.write('\n'.join(groups))
 
 
+def main(index):
+    while True:
+        whats_parser = WhatsAppParser(index)
+        authorisation = whats_parser.authorisation()
+        if authorisation == 'Success':
+            whats_parser.parse()
+        if authorisation == 'Captcha':
+            whats_parser.get_qrcode()
+            whats_parser.driver.close()
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--index', '-i', required=True, type=int)
     args = parser.parse_args()
     index = args.index
-    whats_parser = WhatsAppParser(args.index)
-    authorisation = whats_parser.authorisation()
-    if authorisation == 'Success':
-        whats_parser.parse()
-    if authorisation == 'Captcha':
-        whats_parser.get_qrcode()
-        whats_parser.driver.close()
+    main(args.index)
