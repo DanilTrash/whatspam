@@ -1,10 +1,8 @@
-import argparse
-import datetime
+from datetime import timedelta, datetime
 from io import BytesIO
 from time import sleep
-from multiprocessing import Process
 
-import requests
+from requests import get
 from PIL import Image
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
@@ -27,7 +25,7 @@ class WhatsApp:
         self.profile_id = Database().profile_ids[index]
         self.telegram = Database().telegrams[index]
         mla_url = 'http://127.0.0.1:35000/api/v1/profile/start?automation=true&profileId=' + self.profile_id
-        self.resp = requests.get(mla_url).json()
+        self.resp = get(mla_url).json()
         if self.resp['status'] == 'OK':
             value = self.resp['value']
             self.driver = webdriver.Remote(command_executor=value, desired_capabilities={'acceptSslCerts': True})
@@ -96,7 +94,7 @@ class WhatsApp:
             except Exception as error:
                 LOGGER.error(f'{self.admin} {error}')
                 continue
-        time = datetime.datetime.now() + datetime.timedelta(minutes=TIMEOUT)  # todo: запись и сбор этих данных в базу
+        time = datetime.now() + timedelta(minutes=TIMEOUT)  # todo: запись и сбор этих данных в базу
         LOGGER.info(f'Для {self.admin} спам запустится в {time.strftime("%H:%M")}')
         alert(f'Для {self.admin} спам запустится в {time.strftime("%H:%M")}')
 

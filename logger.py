@@ -1,5 +1,5 @@
 import logging
-from telethon import TelegramClient, sync
+from telethon.sync import TelegramClient
 
 
 def logger(name, mode='w'):
