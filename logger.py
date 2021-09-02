@@ -1,8 +1,11 @@
 import logging
 from telethon.sync import TelegramClient
 
+api_id = 4345538
+api_hash = '49313b839c59755f6d4ed52c002576f9'
 
-def logger(name, mode='w'):
+
+def logger(name, mode='a'):
     logger = logging.getLogger(name)
     logger.setLevel(logging.INFO)
     console_handler = logging.StreamHandler()
@@ -14,10 +17,6 @@ def logger(name, mode='w'):
     fileHandler.setFormatter(formatter)
     logger.addHandler(fileHandler)
     return logger
-
-
-api_id = 4345538
-api_hash = '49313b839c59755f6d4ed52c002576f9'
 
 
 def alert(message=None, entity=585403132, file=None):

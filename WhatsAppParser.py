@@ -10,7 +10,7 @@ LOGGER = logger('WhatsAppParser')
 
 class WhatsAppParser(WhatsApp):
     def __init__(self, index):
-        super().__init__(index)  # fix
+        super().__init__(index)
 
     def parse(self):
         groups = []
@@ -46,7 +46,6 @@ def main(index):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--index', '-i', required=True, type=int)
+    parser.add_argument('index', type=int)
     args = parser.parse_args()
-    index = args.index
     main(args.index)

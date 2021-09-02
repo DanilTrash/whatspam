@@ -4,7 +4,7 @@ from time import sleep
 
 from requests import get
 from PIL import Image
-from selenium import webdriver
+from selenium.webdriver import Remote
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -19,17 +19,21 @@ LOGGER = logger(__file__)
 
 
 class WhatsApp:
-    def __init__(self, index):
-        self.index = index
+    def __init__(self, index):  # fix не работает если запущен экземпляр мультилогина
         self.admin = Database().admins[index]
         self.profile_id = Database().profile_ids[index]
         self.telegram = Database().telegrams[index]
+        self.targets = Database().targets[index]
+        self.message = Database().messages[index]
+        LOGGER.info(f'{self.profile_id}'
+                    f'\n{self.admin}'
+                    )
         mla_url = 'http://127.0.0.1:35000/api/v1/profile/start?automation=true&profileId=' + self.profile_id
         self.resp = get(mla_url).json()
         if self.resp['status'] == 'OK':
             value = self.resp['value']
-            self.driver = webdriver.Remote(command_executor=value, desired_capabilities={'acceptSslCerts': True})
-        LOGGER.info(f'{self.admin} instanced')
+            self.driver = Remote(command_executor=value, desired_capabilities={'acceptSslCerts': True})
+            LOGGER.info(f'{self.admin} instanced')
 
     def get_qrcode(self):
         qr_code_xpath = '//canvas'
@@ -56,6 +60,12 @@ class WhatsApp:
         except TimeoutException:
             LOGGER.error(f'{self.admin} не авторизирован')
         try:
+            exit_button_xpath = '//*[@id="app"]/div[1]/div/div/div/div/div/div[3]/div[1]'
+            WebDriverWait(self.driver, 10).until(
+                lambda d: self.driver.find_element(By.XPATH, exit_button_xpath)).click()
+        except TimeoutException:
+            pass
+        try:
             qr_code_xpath = '//canvas'
             self.driver.find_element(By.XPATH, qr_code_xpath)
             return 'Captcha'
@@ -63,19 +73,18 @@ class WhatsApp:
             return False
 
     def spam(self):
-        targets = Database().targets[self.index].split('\n')
-        message = Database().messages[self.index]
-        if type(message) is float:
+        if type(self.message) is float:
+            return False
+        if type(self.targets) is float:
             return False
         LOGGER.info(f'{self.admin} спам запущен')
         alert(f'{self.admin} спам запущен')
-        for target in targets:
+        for target in self.targets.split('\n'):
             try:
                 search_bar = '//*[@id="side"]/div[1]/div/label/div/div[2]'
                 search_bar_element = WebDriverWait(self.driver, 7).until(
                     lambda d: self.driver.find_element(By.XPATH, search_bar))
                 search_bar_element.clear()
-                print(self.admin, target)
                 search_bar_element.send_keys(target)
                 group_xpath = f'//span[@title="{target}"]'
                 WebDriverWait(self.driver, 7).until(
@@ -85,16 +94,19 @@ class WhatsApp:
                 text_area_element = WebDriverWait(self.driver, 7).until(
                     lambda d: self.driver.find_element(By.XPATH, text_area))
                 text_area_element.clear()
-                for line in message.splitlines():
+                for line in self.message.splitlines():
                     if str.encode(line[:-1]) != b'\n':
                         text_area_element.send_keys(line)
                     text_area_element.send_keys(Keys.ALT + Keys.ENTER)
                 text_area_element.send_keys(Keys.ENTER)
-                print(f'{self.admin} сообщение отправлено')
-            except Exception as error:
-                LOGGER.error(f'{self.admin} {error}')
+                print(f'{self.admin} сообщение отправлено в {target}')
+            except TimeoutException:
+                LOGGER.error(f'{self.admin} не отправлено в {target}')
                 continue
-        time = datetime.now() + timedelta(minutes=TIMEOUT)  # todo: запись и сбор этих данных в базу
+            except Exception as error:
+                LOGGER.exception(f'{self.admin} {error}')
+                break
+        time = datetime.now() + timedelta(minutes=TIMEOUT)
         LOGGER.info(f'Для {self.admin} спам запустится в {time.strftime("%H:%M")}')
         alert(f'Для {self.admin} спам запустится в {time.strftime("%H:%M")}')
 
@@ -118,3 +130,7 @@ def main(index):
                 whats.driver.close()
         except Exception as error:
             LOGGER.error(f'{whats.admin} {error}', exc_info=True)
+
+
+if __name__ == '__main__':
+    main(13)

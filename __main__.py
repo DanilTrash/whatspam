@@ -1,12 +1,13 @@
-import argparse
+from argparse import ArgumentParser
 from WhatsApp import main
-from multiprocessing import Process
+from logger import logger
+
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('index', type=int)
-    args = parser.parse_args()
-    index = args.index
-    proc = Process(target=main, args=(args.index,), daemon=True)
-    proc.start()
-    proc.join()
+    try:
+        parser = ArgumentParser()
+        parser.add_argument('index', type=int)
+        args = parser.parse_args()
+        main(args.index)
+    except Exception as error:
+        logger(__file__).exception(error)
