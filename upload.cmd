@@ -1,1 +1,1 @@
-scp *.py *.session server:/home/danil/whatscript
+scp *.py *.session req.txt server:/home/danil/whatscript

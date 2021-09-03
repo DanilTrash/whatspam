@@ -14,3 +14,4 @@ selenium==3.141.0
 six==1.16.0
 Telethon==1.23.0
 urllib3==1.26.6
+xvfbwrapper==0.2.9

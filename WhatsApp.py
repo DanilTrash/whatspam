@@ -2,10 +2,11 @@ from datetime import timedelta, datetime
 from io import BytesIO
 from time import sleep
 
+from xvfbwrapper import Xvfb
 from requests import get
 from PIL import Image
 from selenium.webdriver import Remote
-from selenium.common.exceptions import NoSuchElementException, TimeoutException
+from selenium.common.exceptions import NoSuchElementException, StaleElementReferenceException, TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
@@ -84,7 +85,7 @@ class WhatsApp:
                 search_bar = '//*[@id="side"]/div[1]/div/label/div/div[2]'
                 search_bar_element = WebDriverWait(self.driver, 7).until(
                     lambda d: self.driver.find_element(By.XPATH, search_bar))
-                search_bar_element.clear()
+                search_bar_element.clear()  # fix StaleElementReferenceException
                 search_bar_element.send_keys(target)
                 group_xpath = f'//span[@title="{target}"]'
                 WebDriverWait(self.driver, 7).until(
@@ -99,8 +100,8 @@ class WhatsApp:
                         text_area_element.send_keys(line)
                     text_area_element.send_keys(Keys.ALT + Keys.ENTER)
                 text_area_element.send_keys(Keys.ENTER)
-                print(f'{self.admin} сообщение отправлено в {target}')
-            except TimeoutException:
+                print(f'{self.admin} отправлено в {target}')
+            except (TimeoutException, StaleElementReferenceException):
                 LOGGER.error(f'{self.admin} не отправлено в {target}')
                 continue
             except Exception as error:
@@ -112,25 +113,23 @@ class WhatsApp:
 
 
 def main(index):
-    while True:
-        whats = WhatsApp(index)
-        if whats.resp['status'] != 'OK':
-            LOGGER.warning(f"{whats.admin} multilogin {whats.resp['status']}")
-            continue
-        try:
-            authorisation = whats.authorisation()
-            if authorisation == 'Success':
-                whats.spam()
-                whats.driver.close()
-                sleep(TIMEOUT * 60)
-            if authorisation == 'Captcha':
-                whats.get_qrcode()
-                whats.driver.close()
-            else:
-                whats.driver.close()
-        except Exception as error:
-            LOGGER.error(f'{whats.admin} {error}', exc_info=True)
-
-
-if __name__ == '__main__':
-    main(13)
+    with Xvfb(1280, 1024):
+        while True:
+            whats = WhatsApp(index)
+            if whats.resp['status'] != 'OK':
+                LOGGER.warning(f"{whats.admin} multilogin {whats.resp['status']}")
+                continue
+            try:
+                authorisation = whats.authorisation()
+                if authorisation == 'Success':
+                    whats.spam()
+                    whats.driver.close()
+                    break
+                if authorisation == 'Captcha':
+                    whats.get_qrcode()
+                    whats.driver.close()
+                else:
+                    whats.driver.close()
+            except Exception as error:
+                LOGGER.error(f'{whats.admin} {error}', exc_info=True)
+        sleep(TIMEOUT * 60)
