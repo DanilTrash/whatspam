@@ -2,7 +2,7 @@ from argparse import ArgumentParser
 from time import sleep
 
 from WhatsApp import main, TIMEOUT
-from logger import alert, logger
+from logger import logger
 from sys import platform
 
 
@@ -23,4 +23,3 @@ if __name__ == '__main__':
                     sleep(TIMEOUT * 60)
         except Exception as error:
             logger(__file__).exception(error)
-            alert(error.__str__(), 'me')

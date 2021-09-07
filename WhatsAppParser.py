@@ -10,7 +10,7 @@ LOGGER = logger('WhatsAppParser')
 
 class WhatsAppParser(WhatsApp):
     def __init__(self, index):
-        super().__init__(index)
+        super(WhatsApp).__init__(index)
 
     def parse(self):
         groups = []

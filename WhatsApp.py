@@ -5,9 +5,8 @@ from time import sleep
 from requests import get
 from PIL import Image
 from selenium.webdriver import Remote
-from selenium.common.exceptions import ElementClickInterceptedException, InvalidSessionIdException, \
-    NoSuchElementException, \
-    StaleElementReferenceException, TimeoutException
+from selenium.common.exceptions import (ElementClickInterceptedException, NoSuchElementException,
+                                        StaleElementReferenceException, TimeoutException)
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
@@ -55,7 +54,9 @@ class WhatsApp:
         self.driver.get(WEB_WHATSAPP_URL)
         LOGGER.info(f'{self.admin} Whatsapp загружается')
         try:
-            WebDriverWait(self.driver, 20).until(lambda d: 'Не отключайте свой телефон' in self.driver.page_source)
+            search_bar = '//*[@id="side"]/div[1]/div/label/div/div[2]'
+            WebDriverWait(self.driver, 15).until(
+                lambda d: self.driver.find_element(By.XPATH, search_bar))
             return 'Success'
         except TimeoutException:
             LOGGER.error(f'{self.admin} не авторизирован')
@@ -131,3 +132,7 @@ def main(index):
         LOGGER.exception(f'{whats.admin} {error}')
         alert(f'{whats.admin} {error.__str__()}')
         return
+
+
+if __name__ == '__main__':
+    main(13)

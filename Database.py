@@ -6,8 +6,9 @@ class Database:
            'export?format=csv&id=12U5G94RRohSdDujUKU70LrS3iCKOOe5rRKfVIGmVaf0&gid=0')
 
     def __init__(self):
-        self.admins = pd.read_csv(Database.url)['admin'].tolist()
-        self.profile_ids = pd.read_csv(Database.url)['profile_id'].tolist()
-        self.messages = pd.read_csv(Database.url)['message'].tolist()
-        self.targets = pd.read_csv(Database.url)['targets'].tolist()
-        self.telegrams = pd.read_csv(Database.url)['telegram'].dropna().tolist()
+        df = pd.read_csv(Database.url)
+        self.admins = df['admin'].tolist()
+        self.profile_ids = df['profile_id'].tolist()
+        self.messages = df['message'].tolist()
+        self.targets = df['targets'].tolist()
+        self.telegrams = df['telegram'].dropna().tolist()
