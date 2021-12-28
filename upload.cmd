@@ -1,1 +1,0 @@
-scp *.py *.session req.txt server:/home/danil/whatscript
