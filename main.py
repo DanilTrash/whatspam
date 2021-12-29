@@ -42,11 +42,11 @@ def logger(name, mode='w', log_file='log'):
     return logger
 
 
-def alert(message, entity, file=None):
+def alert(message: str, entity: str, file: bytes = None):
     api_id = 4345538
     api_hash = '49313b839c59755f6d4ed52c002576f9'
 
-    with TelegramClient(f'+6283838463338', api_id, api_hash) as client:
+    with TelegramClient(f'danil', api_id, api_hash) as client:
         client.send_message(entity, message, file=file)
 
 
