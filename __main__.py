@@ -305,6 +305,7 @@ class ParseModel(Model):
 
     def __call__(self):
         with Browser(self) as browser:
+            alert(f'{self.user} авторизация', self.telegram)
             browser.auth()
             self.logger.info(f'{self.user} парсинг запущен')
             alert(f'{self.user} парсинг запущен', self.telegram)
@@ -324,6 +325,7 @@ class SpamModel(Model):
         while True:
             try:
                 with Browser(self) as browser:
+                    alert(f'{self.user} авторизация', self.telegram)
                     browser.auth()
                     alert(f'{self.user} спам запущен', self.telegram)
                     self.logger.info(f'{self.user} спам запущен')
@@ -333,8 +335,7 @@ class SpamModel(Model):
                                 browser.send_message(target, self.data('message')[0])
                                 sleep(self.timer_btw_targets)
                             else:
-                                self.logger.info('ошибка поиска %s' % target)
-                                # alert('ошибка поиска %s' % target, self.telegram)
+                                self.logger.error('ошибка поиска %s' % target)
                         except Exception as error:
                             self.logger.exception(error)
                     alert(f'{self.user} спам завершен', self.telegram)
@@ -351,9 +352,10 @@ def main():
     args = parser.parse_args()
     if args.mode == 'spam':
         model = SpamModel(args.client)
+        model()
     elif args.mode == 'parse':
         model = ParseModel(args.client)
-    model()
+        model()
 
 
 if __name__ == '__main__':
