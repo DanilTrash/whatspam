@@ -285,10 +285,10 @@ class Browser:
 
 class Model:
     _class_name = 'Model'
+    data = Database(self.page)
 
     def __init__(self, page):
         self.page = page
-        self.data = Database(self.page)
         self.user = self.data('user')[0]
         self.proxy = self.data('proxy').fillna('')[0]
         self.profile_id = self.data('profile_id')[0]
