@@ -316,6 +316,7 @@ class JoinGropsModel(Model):
             browser.auth()
             self.logger.info(f'{self.user} {self._class_name}')
             for link in groups:
+                print(link)
                 browser.join_group(link)
                 sleep(2)
 
