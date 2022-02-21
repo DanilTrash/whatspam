@@ -7,7 +7,7 @@ from time import sleep
 
 from PIL import Image
 from loguru import logger
-from selenium import webdriver
+from selenium.webdriver import ChromeOptions, Chrome
 from selenium.common.exceptions import StaleElementReferenceException, TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -20,9 +20,9 @@ dirs = ['captchas',
         'logs',
         'user_data', ]
 
-for dir in dirs:
-    if not Path(dir).exists():
-        os.mkdir(dir)
+for directory in dirs:
+    if not Path(directory).exists():
+        os.mkdir(directory)
 
 
 class Driver:
@@ -32,9 +32,9 @@ class Driver:
         self.profile = profile_id
 
     def chrome_driver(self):
-        options = webdriver.ChromeOptions()
+        options = ChromeOptions()
         options.add_argument(f'--user-data-dir={os.getcwd()}/user_data/{self.profile}')
-        self.driver = webdriver.Chrome(options=options)
+        self.driver = Chrome(options=options)
         return self.driver
 
 
