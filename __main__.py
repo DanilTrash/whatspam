@@ -2,6 +2,7 @@ import os
 import sys
 from argparse import ArgumentParser
 from io import BytesIO
+from pathlib import Path
 from time import sleep
 
 from PIL import Image
@@ -14,6 +15,14 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 from alert import alert
 from data import Database
+
+dirs = ['captchas',
+        'logs',
+        'user_data', ]
+
+for dir in dirs:
+    if not Path(dir).exists():
+        os.mkdir(dir)
 
 
 class Driver:
@@ -139,7 +148,7 @@ class Browser:
                 try:
                     self.driver.find_element_by_xpath(elements.get(key))
                     return key
-                except Exception:
+                except Exception:  # fixme
                     pass
 
     def type_text(self, element, message):
@@ -326,7 +335,6 @@ def main():
 if __name__ == '__main__':
     if sys.platform == 'linux':
         from xvfbwrapper import Xvfb
-
         with Xvfb():
             main()
     else:
