@@ -10,6 +10,7 @@ from selenium.webdriver import ChromeOptions, Chrome
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
+from webdriver_manager.chrome import ChromeDriverManager
 
 from module.alert import alert
 from module.data import UserFromDB
@@ -26,7 +27,7 @@ class Driver:
     def chrome_driver(self, profile):
         options = ChromeOptions()
         options.add_argument(f'--user-data-dir={os.getcwd()}/user_data/{profile}')
-        self.driver = Chrome(options=options)
+        self.driver = Chrome(ChromeDriverManager().install(), options=options)
         return self.driver
 
     def type_text(self, element, message):
