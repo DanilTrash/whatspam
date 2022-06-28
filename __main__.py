@@ -5,7 +5,7 @@ from module.client import client
 
 
 def main():
-    if os.name == "linux":
+    if os.name == "linux" or 'posix':
         from xvfbwrapper import Xvfb
         with Xvfb():
             client()
