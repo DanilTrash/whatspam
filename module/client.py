@@ -70,6 +70,7 @@ def client():
     parser.add_argument('client')
     parser.add_argument('mode')
     args = parser.parse_args()
+    print(args)
     models = {
         'spam': SpamModel,
         'parse': ParseModel,

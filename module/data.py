@@ -1,8 +1,9 @@
 from pandas import read_csv
+from module.config import Config
 
 
 class DataBase:
-    db_id = '12U5G94RRohSdDujUKU70LrS3iCKOOe5rRKfVIGmVaf0'
+    db_id = Config.db_id
 
     def get_frane(self, page, dtype):
         url = (f'https://docs.google.com/spreadsheets/d/{self.db_id}/'

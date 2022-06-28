@@ -21,11 +21,14 @@ for directory in ['captchas', 'user_data']:
 
 
 class Driver:
-    driver = None
     search_bar = '//*[@id="side"]/div[1]/div/div/div[2]/div/div[2]'
+    text_area = '//*/footer/div[1]/div/span[2]/div/div[2]/div[1]/div/div[2]'
+    parse_elements = '//div/div/div/div[2]/div[1]/div[1]/div/span'
 
     def chrome_driver(self, profile):
         options = ChromeOptions()
+        options.add_argument('--no-sandbox')
+        options.add_argument('--disable-dev-shm-usage')
         options.add_argument(f'--user-data-dir={os.getcwd()}/user_data/{profile}')
         self.driver = Chrome(ChromeDriverManager().install(), options=options)
         return self.driver
@@ -72,8 +75,7 @@ class Driver:
         """
         return textarea of message field element
         """
-        text_area = '//*/footer/div[1]/div/span[2]/div/div[2]/div[1]/div/div[2]'
-        return self.find_element(text_area)
+        return self.find_element(self.text_area)
 
     def find_element(self, xpath, timeout=10):
         """
@@ -114,9 +116,8 @@ class Driver:
         right = location['x'] + size['width'] + 20
         bottom = location['y'] + size['height'] + 20
         im = im.crop((left, top, right, bottom))
-        captch_filename = file_name
-        im.save(captch_filename)
-        return captch_filename
+        im.save(file_name)
+        return file_name
 
 
 class Browser(Driver):
@@ -180,13 +181,11 @@ class Browser(Driver):
     def parse(self):
         alert(f'{self.user.name} парсинг запущен', self.user.telegram)
         groups = []
-        # elements = '//*[@id="pane-side"]/div[1]/div/div/div/div/div/div[2]/div[1]/div[1]/span'
-        elements = '//div/div/div/div[2]/div[1]/div[1]/div/span'
         print('Прокрути чаты')
         try:
             while True:
                 uniqueelements = []
-                for element in self.driver.find_elements(By.XPATH, elements):
+                for element in self.driver.find_elements(By.XPATH, self.parse_elements):
                     try:
                         chat = element.get_attribute('title')
                         uniqueelements.append(chat)

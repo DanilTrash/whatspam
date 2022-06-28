@@ -1,10 +1,11 @@
-import sys
+import os
+
 
 from module.client import client
 
 
 def main():
-    if sys.platform == 'linux':
+    if os.name == "linux":
         from xvfbwrapper import Xvfb
         with Xvfb():
             client()
