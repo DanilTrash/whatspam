@@ -2,6 +2,7 @@ import os
 from io import BytesIO
 from pathlib import Path
 from time import sleep
+from typing import Set
 
 from PIL import Image
 from loguru import logger
@@ -11,6 +12,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
+from bs4 import BeautifulSoup
 
 from module.alert import alert
 from module.data import UserFromDB
@@ -178,27 +180,23 @@ class Browser(Driver):
         if 'Попытка подключения к телефону' in self.driver.page_source:
             self.find_element('//div[1]/div/div').click()
 
-    def parse(self):
+    def parse(self) -> Set[str]:
         alert(f'{self.user.name} парсинг запущен', self.user.telegram)
-        groups = []
+        targets = []
         print('Прокрути чаты')
-        try:
-            while True:
-                uniqueelements = []
-                for element in self.driver.find_elements(By.XPATH, self.parse_elements):
-                    try:
-                        chat = element.get_attribute('title')
-                        uniqueelements.append(chat)
-                    except StaleElementReferenceException:
-                        continue
-                for group in set(uniqueelements) - set(groups):
-                    groups.append(group)
-                    print(group)
-                    with open('targets.txt', 'w+', encoding='utf_8_sig') as f:
-                        f.write('\n'.join(groups))
-        except Exception as error:
-            logger.error(error)
-            return False
+        while True:
+            try:
+                soup = BeautifulSoup(self.driver.page_source, 'lxml')
+                side_bar = soup.find('div', dict(role="grid"))
+                for el in side_bar:
+                    element = el.find('span', dict(dir="auto"))
+                    s = str(element['title'])
+                    print(s)
+                    targets.append(s)
+                sleep(0.2)
+            except KeyboardInterrupt:
+                break
+        return set(targets)
 
     def find_contact(self, target):
         try:

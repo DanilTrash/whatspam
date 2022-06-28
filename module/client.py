@@ -39,7 +39,9 @@ class ParseModel(Model):
         self.user = UserFromDB(self.page)
         with Browser(self.user) as browser:
             browser.auth()
-            browser.parse()
+            targets = browser.parse()
+            with open('targets.txt', 'w', encoding='utf_8_sig') as file:
+                file.write('\n'.join(targets))
 
 
 class SpamModel(Model):
